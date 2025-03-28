@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discord Themes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 20px;
+        }
+        a {
+            color: #00b0f4;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Discord Themes Hosted Here</h1>
+    <p>Fetching files from GitHub...</p>
+    <ul id="file-list"></ul>
+
+    <script>
+        const repoOwner = "Owl-ish";
+        const repoName = "discord-themes";
+        const branch = "main";
+        const path = "docs/FrostedGlass";
+
+        async function fetchFiles() {
+            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}?ref=${branch}`;
+            const response = await fetch(apiUrl);
+            const files = await response.json();
+
+            if (Array.isArray(files)) {
+                const fileList = document.getElementById("file-list");
+                fileList.innerHTML = "";
+                files.forEach(file => {
+                    if (file.name.endsWith(".css")) {
+                        const li = document.createElement("li");
+                        const a = document.createElement("a");
+                        a.href = file.download_url;
+                        a.textContent = file.name;
+                        li.appendChild(a);
+                        fileList.appendChild(li);
+                    }
+                });
+            } else {
+                document.querySelector("p").textContent = "Error fetching file list.";
+            }
+        }
+
+        fetchFiles();
+    </script>
+</body>
+</html>
