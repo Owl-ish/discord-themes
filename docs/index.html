@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Discord Themes</title>
+    <title>Discord Themes - File Explorer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,39 +30,68 @@
 </head>
 <body>
     <h1>Discord Themes Hosted Here</h1>
-    <p>Fetching files from GitHub...</p>
+    <p id="info">Click on a folder to view its contents:</p>
     <ul id="file-list"></ul>
 
     <script>
-        const repoOwner = "Owl-ish";
-        const repoName = "discord-themes";
-        const branch = "main";
-        const path = "docs/";
+        const repoOwner = "Owl-ish"; // Your GitHub username
+        const repoName = "discord-themes"; // Your repo name
+        const branch = "main"; // The branch where the files are located
+        const basePath = "docs"; // Base folder where files are located
 
-        async function fetchFiles() {
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}?ref=${branch}`;
+        async function fetchContents(path = "") {
+            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${basePath}/${path}?ref=${branch}`;
             const response = await fetch(apiUrl);
-            const files = await response.json();
 
-            if (Array.isArray(files)) {
-                const fileList = document.getElementById("file-list");
-                fileList.innerHTML = "";
-                files.forEach(file => {
-                    if (file.name.endsWith(".css")) {
-                        const li = document.createElement("li");
-                        const a = document.createElement("a");
-                        a.href = file.download_url;
-                        a.textContent = file.name;
-                        li.appendChild(a);
-                        fileList.appendChild(li);
-                    }
-                });
+            if (response.ok) {
+                const files = await response.json();
+                displayContents(files, path);
             } else {
-                document.querySelector("p").textContent = "Error fetching file list.";
+                document.querySelector("#info").textContent = "Error fetching file list. Check the GitHub API response.";
             }
         }
 
-        fetchFiles();
+        function displayContents(files, path) {
+            const fileList = document.getElementById("file-list");
+            fileList.innerHTML = ""; // Clear previous contents
+
+            if (path === "") {
+                // Show folders at root level
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.href = "#";
+                a.textContent = "📂 FrostedGlass";
+                a.onclick = () => {
+                    fetchContents("FrostedGlass");
+                };
+                li.appendChild(a);
+                fileList.appendChild(li);
+            } else {
+                // Show files inside the clicked folder
+                files.forEach(file => {
+                    const li = document.createElement("li");
+                    const a = document.createElement("a");
+                    a.href = file.download_url;
+                    a.textContent = `📄 ${file.name}`;
+                    li.appendChild(a);
+                    fileList.appendChild(li);
+                });
+
+                // Add a "Go Back" link
+                const li = document.createElement("li");
+                const a = document.createElement("a");
+                a.href = "#";
+                a.textContent = "⬅️ Go Back";
+                a.onclick = () => {
+                    fetchContents(""); // Return to folder list
+                };
+                li.appendChild(a);
+                fileList.insertBefore(li, fileList.firstChild);
+            }
+        }
+
+        // Load root folders initially
+        fetchContents();
     </script>
 </body>
 </html>
